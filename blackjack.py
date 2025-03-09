@@ -2,13 +2,17 @@ import os
 import random
 import copy
 import tkinter as tk
+from rules_agent import RulesAgent
 
 def play(deck):
     print("It's time to play some Blackjack! You start out with 200 chips")
     money = 200
     deck_list = list(deck.keys())
+
+    #working under the assumption that we are only going to have 1 deck
+    rules_based_agent = RulesAgent()
     while money > 0 and len(deck) >= 4:
-        print(f"Current Money: {money}")
+        print(f"\nCurrent Money: {money}")
         while True: # Get user bet amount
             try: 
                 bet = int(input("How much would you like to bet? "))  
@@ -21,16 +25,21 @@ def play(deck):
             except ValueError:
                 print("Invalid input! Please enter a number.")
         money -= bet
+        print("--------------")
         
         # Game Logic
         player_hand = []
         dealer_hand = []
 
         # Dealing cards
-        deal_card(player_hand, deck, deck_list)
-        deal_card(dealer_hand, deck, deck_list)
-        deal_card(player_hand, deck, deck_list)
-        deal_card(dealer_hand, deck, deck_list)
+        player_1 = deal_card(player_hand, deck, deck_list)
+        dealer_1 = deal_card(dealer_hand, deck, deck_list)
+        player_2 = deal_card(player_hand, deck, deck_list)
+        dealer_2 = deal_card(dealer_hand, deck, deck_list)
+
+        rules_based_agent.update_count(player_1)
+        rules_based_agent.update_count(player_2)
+        rules_based_agent.update_count(dealer_1)
 
         # I think i messed up and confused everyone with this data structure but we move...
         print(f"You got the {player_hand[0][1][0]} of {player_hand[0][1][1]} and the {player_hand[1][1][0]} of {player_hand[1][1][1]}")
@@ -41,9 +50,12 @@ def play(deck):
 
         # Player's Turn
         while player_total < 21:
+            print("\nRules-Based Agent recommends to", rules_based_agent.decide(player_total, dealer_1[0]))
             action = input("Would you like to (h)it or (s)tand? ").lower()
+            print()
             if action == "h":
-                deal_card(player_hand, deck, deck_list)
+                pc_val = deal_card(player_hand, deck, deck_list)
+                rules_based_agent.update_count(pc_val)
                 player_total = sum_hand(player_hand)
                 print(f"You drew {player_hand[-1][1][0]} of {player_hand[-1][1][1]}. Your total is now {player_total}.")
             elif action == "s":
@@ -58,8 +70,11 @@ def play(deck):
 
         # Dealer's Turn (Hits until 17+)
         print(f"Dealer's hidden card was {dealer_hand[1][1][0]} of {dealer_hand[1][1][1]}. Dealer total: {dealer_total}")
+        rules_based_agent.update_count(dealer_2)
+
         while dealer_total < 17:
-            deal_card(dealer_hand, deck, deck_list)
+            dc_val = deal_card(dealer_hand, deck, deck_list)
+            rules_based_agent.update_count(dc_val)
             dealer_total = sum_hand(dealer_hand)
             print(f"Dealer drew {dealer_hand[-1][1][0]} of {dealer_hand[-1][1][1]}. Dealer total is now {dealer_total}.")
 
@@ -76,7 +91,7 @@ def play(deck):
             print("It's a tie! You get your bet back.")
             money += bet
 
-    print("Game Over!\n")
+    print("-------------\nGame Over!\n-------------\n")
 
 
 def sum_hand(hand):
@@ -99,7 +114,8 @@ def deal_card(hand, deck, deck_list):
     if deck_list:
         card_key = deck_list.pop()  
         card = deck.pop(card_key)
-        hand.append(card)  
+        hand.append(card)
+        return card
 
 # Makes deepcopy of OG deck and shuffles all the cards in the process
 def shuffle(deck):
