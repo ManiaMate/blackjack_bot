@@ -134,7 +134,6 @@ def dealer_turn(dealer_hand, deck):
     while calculate_hand_value(dealer_hand) < 17:
         dealer_hand.append(get_random_card(deck))
         
-
 def init_player_hands(num_players, deck):
     player_hands = [[get_random_card(deck), get_random_card(deck)] for _ in range(num_players)]
     return player_hands
