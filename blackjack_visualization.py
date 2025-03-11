@@ -79,15 +79,16 @@ def format_card_name(card):
     rank = rank_names.get(rank, rank)
     return f"{rank}_of_{suit_names[suit]}"
 
-def display_action(action):
-    font = pygame.font.Font(None, 36)
+def display_action(action, num_players):
+    font = pygame.font.Font(None, 12)
     text = font.render(action, True, (255, 255, 255))
-    game_display.blit(text, (game_display_width//2 - text.get_width()//2, game_display_height - 50))
+    location = (game_display_width//(num_players+2) - text.get_width()//2, game_display_height - 50)
+    game_display.blit(text, location)
 
-def display_money(money, bet):
-    font = pygame.font.Font(None, 36)
+def display_money(money, bet, location = (50,10)):
+    font = pygame.font.Font(None, 24)
     money_text = font.render(f"Money: ${money}  Bet: ${bet}", True, (255, 255, 255))
-    game_display.blit(money_text, (50, 10))
+    game_display.blit(money_text, location)
 
 def init_deck():
     """Initialize and shuffle a deck of 52 cards."""
@@ -151,10 +152,10 @@ def blackjack_game(card_folder, players):
         while not game_over:
             draw_board()
             display_cards(dealer_hand, (100, 100), card_images)
-            for player in players:
-                display_money(player.money, player.bet)
-                display_cards(player.hand, (100, 400), card_images)
-                display_action(player.message)
+            for i, player in enumerate(players):
+                display_money(player.money, player.bet, (50 + i*200, 10 ))
+                display_cards(player.hand, (100 + i*200, 400), card_images)
+                display_action(player.message, i)
                 if not player.bust and player.turn:
                     action = player.action()
                     print(action)
@@ -231,7 +232,7 @@ if __name__ == "__main__":
     deck = init_deck()
     agent = BlackjackAgent()
     
-    players = [Player(agent, deck, 'rl') for _ in range(1)]
+    players = [Player(agent, deck, 'rl') for _ in range(2)]
     blackjack_game('./Card PNGs', players)
 
     
