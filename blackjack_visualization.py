@@ -42,8 +42,6 @@ class Player:
             return self.agent.ml_decision(player_value, dealer_value)
 
 
-
-
 game_display_width = 800
 game_display_height = 600
 card_width = 80
@@ -78,7 +76,7 @@ def display_cards(cards, position, card_images, scale_factor=0.8):
                 (int(card_width * scale_factor), int(card_height * scale_factor))
             )
             game_display.blit(scaled_card, (x_offset, y_offset))
-            x_offset += int(card_width * scale_factor) + 10
+            x_offset += int(card_width/2 * scale_factor) + 10
 
 def format_card_name(card):
     rank = card[:-1]
@@ -88,10 +86,9 @@ def format_card_name(card):
     rank = rank_names.get(rank, rank)
     return f"{rank}_of_{suit_names[suit]}"
 
-def display_action(action, num_players):
-    font = pygame.font.Font(None, 12)
+def display_action(action, location):
+    font = pygame.font.Font(None, 24)
     text = font.render(action, True, (255, 255, 255))
-    location = (game_display_width//(num_players+2) - text.get_width()//2, game_display_height - 50)
     game_display.blit(text, location)
 
 def display_money(money, bet, location = (50,10)):
@@ -162,8 +159,8 @@ def blackjack_game(card_folder, players):
             display_cards(dealer_hand, (100, 100), card_images)
             for i, player in enumerate(players):
                 display_money(player.money, player.bet, (50 + i*200, 10 ))
-                display_cards(player.hand, (100 + i*200, 400), card_images)
-                # display_action(player.message, i)
+                display_cards(player.hand, (100 + i*150, 400 - ((i+1)%2)*150), card_images)
+                display_action(player.message, (100 + i*150, 400 - ((i+1)%2)*150 + card_height))
                 if not player.bust and player.turn:
                     action = player.action()
                     if action == 1:
@@ -182,22 +179,22 @@ def blackjack_game(card_folder, players):
                             player.agent.update_count(pc_val)
                         player_value = calculate_hand_value(player.hand)
                         if player_value > 21 and not player.bust:
-                            player.message = "Player busts! Dealer wins! Press R to restart."
+                            player.message = "Player busts! Dealer wins!"
                             player.bust = True
-                            money -= bet
+                            player.money -= bet
                     elif action == 0:
                         player.turn = False
                         dealer_turn(dealer_hand, deck)
                         dealer_value = calculate_hand_value(dealer_hand)
                         player_value = calculate_hand_value(player.hand)
                         if dealer_value > 21 or dealer_value < player_value:
-                            player.message = "Player wins! Press R to restart."
+                            player.message = "Player wins!" + str(player_value) + ">" + str(dealer_value)
                             player.money += player.bet
                         elif dealer_value > player_value:
-                            player.message = "Dealer wins! Press R to restart."
+                            player.message = "Dealer wins!" + str(player_value) + "<" + str(dealer_value)
                             player.money -= player.bet
                         else:
-                            player.message = "It's a tie! Press R to restart."
+                            player.message = "It's a tie!" + str(player_value) + "=" + str(dealer_value)
 
             pygame.display.update()
             
