@@ -91,7 +91,7 @@ def play(deck, players):
                     true_count = rules_agent.get_true_count()
                     action = 'h' if ml_decision(player_total, dealer_hand[0][0], true_count) == 1 else 's'
                 elif player.player_type == "rule":
-                    action = 'h' if rules_agent.decide(player_total, dealer_hand[0][0]) == "Hit" else 's'
+                    action = 'h' if rules_agent.decide(player_total, dealer_hand[0][0]) == 1 else 's'
 
                 if action == "h":
                     pc_val = deal_card(player.hand, deck, deck_list)
@@ -155,6 +155,7 @@ def deal_card(hand, deck, deck_list):
         card_key = deck_list.pop()
         card = deck.pop(card_key)
         hand.append(card)
+        print(card)
         return card
 
 def shuffle(deck):

@@ -46,20 +46,20 @@ class RulesAgent:
         if not isinstance(dealer_value, int):
             dealer_value = 11  # Dealer has an ace
             if player_value <= 16:
-                return "Hit"
-            return "Stand"
+                return 1
+            return 0
 
         # Basic strategy
-        if player_value <= 11: return "Hit"
-        if player_value >= 17: return "Stand"
-        if player_value == 12 and 4 <= dealer_value <= 6: return "Stand"
-        if 13 <= player_value <= 16 and 2 <= dealer_value <= 6: return "Stand"
+        if player_value <= 11: return 1
+        if player_value >= 17: return 0
+        if player_value == 12 and 4 <= dealer_value <= 6: return 0
+        if 13 <= player_value <= 16 and 2 <= dealer_value <= 6: return 0
 
         # Card-counting based strategy
         if player_value == 16 and dealer_value == 10 and remaining_high_cards > remaining_low_cards:
-            return "Stand"
+            return 0
         
         if player_value == 15 and dealer_value == 10 and remaining_high_cards > remaining_low_cards:
-            return "Stand"
+            return 0
         
-        return "Hit"
+        return 1

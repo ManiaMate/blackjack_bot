@@ -3,6 +3,7 @@ import os
 import random
 
 from blackjack_gym import BlackjackAgent
+from rules_agent import RulesAgent
 
 class Player:
     def __init__(self, agent, deck, type="rl"):
@@ -30,7 +31,10 @@ class Player:
     def action(self):
         if self.type == 'rl':
             return self.agent.do_action((self.hand, self.dealer_hand, self.aces), calculate_hand_value)
-    
+        elif self.type == 'rule':
+            player_value = calculate_hand_value(self.hand)
+            dealer_value = calculate_hand_value(self.dealer_hand)
+            return self.agent.decide(player_value, dealer_value)
 
 
 
@@ -158,9 +162,20 @@ def blackjack_game(card_folder, players):
                 display_action(player.message, i)
                 if not player.bust and player.turn:
                     action = player.action()
-                    print(action)
                     if action == 1:
-                        player.hand.append(get_random_card(deck))
+                        card = get_random_card(deck)
+                        player.hand.append(card)
+                        if player.type == "rule":
+                            rank_values = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11}
+                            rank_map = {'J': 'jack', 'Q': 'queen', 'K': 'king', 'A': 'ace'}
+                            suit_map = {'S': 'spades', 'H': 'hearts', 'D': 'diamonds', 'C': 'clubs'}
+                            rank = card[:-1]
+                            if rank in rank_map.keys():
+                                rank = rank_map[rank]
+                            suit = suit_map[card[-1]]
+                            val = rank_values[card[:-1]]
+                            pc_val = [val, [rank, suit]]
+                            player.agent.update_count(pc_val)
                         player_value = calculate_hand_value(player.hand)
                         if player_value > 21 and not player.bust:
                             player.message = "Player busts! Dealer wins! Press R to restart."
@@ -231,8 +246,9 @@ def blackjack_game(card_folder, players):
 if __name__ == "__main__":
     deck = init_deck()
     agent = BlackjackAgent()
-    
-    players = [Player(agent, deck, 'rl') for _ in range(2)]
+    agent2 = RulesAgent()
+
+    players = [Player(agent,deck, "rl"), Player(agent2,deck, "rule")]
     blackjack_game('./Card PNGs', players)
 
     
