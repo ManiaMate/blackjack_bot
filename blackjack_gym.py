@@ -182,38 +182,38 @@ def test_from_custom_state(agent, env, custom_state, max_steps=10):
     print(f"Final Reward: {total_reward}\n")
 
 
+def main():
+    # Hyperparameters
+    learning_rate = 0.01
+    n_episodes = 100_000
+    start_epsilon = 1.0
+    epsilon_decay = 0.9995  # Improved smooth decay
+    final_epsilon = 0.1
 
-# Hyperparameters
-learning_rate = 0.01
-n_episodes = 100_000
-start_epsilon = 1.0
-epsilon_decay = 0.9995  # Improved smooth decay
-final_epsilon = 0.1
+    env = gym.make("Blackjack-v1", sab=False)
+    env = gym.wrappers.RecordEpisodeStatistics(env)
+    agent = BlackjackAgent()
 
-env = gym.make("Blackjack-v1", sab=False)
-env = gym.wrappers.RecordEpisodeStatistics(env)
-agent = BlackjackAgent()
+    # Train the agent
+    try:
+        agent.load_model()
+        print("Loaded existing Q-values successfully!")
+    except FileNotFoundError:
+        print("No saved model found. Training from scratch...")
+        train_agent(agent, env, n_episodes)
+        plot_training(agent)
 
-# Train the agent
-try:
-    agent.load_model()
-    print("Loaded existing Q-values successfully!")
-except FileNotFoundError:
-    print("No saved model found. Training from scratch...")
-    train_agent(agent, env, n_episodes)
-    plot_training(agent)
+    # Test the agent
+    test_reward = test_agent(agent, env)
+    print(f"Average reward over 1000 test games: {test_reward}")
 
-# Test the agent
-test_reward = test_agent(agent, env)
-print(f"Average reward over 1000 test games: {test_reward}")
+    # Visualize some episodes
+    visualize_blackjack(env, agent, episodes=5)
 
-# Visualize some episodes
-visualize_blackjack(env, agent, episodes=5)
+    # Custom state: Player total = 15, Dealer's card = 10, Usable ace = False
+    # custom_state = (2, 20, False)
+    custom_state = ([5,2], [8], False)  # Player has 10+5; Dealer has a face-up 10
 
-# Custom state: Player total = 15, Dealer's card = 10, Usable ace = False
-# custom_state = (2, 20, False)
-custom_state = ([5,2], [8], False)  # Player has 10+5; Dealer has a face-up 10
-
-test_from_custom_state(agent, env, custom_state)
+    test_from_custom_state(agent, env, custom_state)
 
 

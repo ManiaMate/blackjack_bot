@@ -4,6 +4,7 @@ import random
 
 from blackjack_gym import BlackjackAgent
 from rules_agent import RulesAgent
+from ml_agent import MLAgent
 
 class Player:
     def __init__(self, agent, deck, type="rl"):
@@ -35,6 +36,10 @@ class Player:
             player_value = calculate_hand_value(self.hand)
             dealer_value = calculate_hand_value(self.dealer_hand)
             return self.agent.decide(player_value, dealer_value)
+        elif self.type == 'ml':
+            player_value = calculate_hand_value(self.hand)
+            dealer_value = calculate_hand_value(self.dealer_hand)
+            return self.agent.ml_decision(player_value, dealer_value)
 
 
 
@@ -63,7 +68,7 @@ def draw_board():
     game_display.fill((34, 139, 34))  # Green felt background
     pygame.draw.rect(game_display, (255, 255, 255), [50, 50, 700, 500], 5)
 
-def display_cards(cards, position, card_images, scale_factor=0.5):
+def display_cards(cards, position, card_images, scale_factor=0.8):
     x_offset, y_offset = position
     for card in cards:
         formatted_card = format_card_name(card)
@@ -159,13 +164,13 @@ def blackjack_game(card_folder, players):
             for i, player in enumerate(players):
                 display_money(player.money, player.bet, (50 + i*200, 10 ))
                 display_cards(player.hand, (100 + i*200, 400), card_images)
-                display_action(player.message, i)
+                # display_action(player.message, i)
                 if not player.bust and player.turn:
                     action = player.action()
                     if action == 1:
                         card = get_random_card(deck)
                         player.hand.append(card)
-                        if player.type == "rule":
+                        if player.type in ["rule", "ml"]: 
                             rank_values = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11}
                             rank_map = {'J': 'jack', 'Q': 'queen', 'K': 'king', 'A': 'ace'}
                             suit_map = {'S': 'spades', 'H': 'hearts', 'D': 'diamonds', 'C': 'clubs'}
@@ -214,22 +219,6 @@ def blackjack_game(card_folder, players):
                 if event.type == pygame.QUIT:
                     running = False
                     game_over = True
-                # elif event.type == pygame.KEYDOWN and player_turn:
-                #     if event.key == pygame.K_h:  # Hit
-                #         player_hand.append(get_random_card(deck))
-                #     elif event.key == pygame.K_s:  # Stand
-                #         player_turn = False
-                #         dealer_turn(dealer_hand, deck)
-                #         dealer_value = calculate_hand_value(dealer_hand)
-                #         if dealer_value > 21 or dealer_value < player_value:
-                #             message = "Player wins! Press R to restart."
-                #             money += bet
-                #         elif dealer_value > player_value:
-                #             message = "Dealer wins! Press R to restart."
-                #             money -= bet
-                #         else:
-                #             message = "It's a tie! Press R to restart."
-                #         round_over = True
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_r and round_over:
                     round_over = False  # Reset game state
                     reset = True
@@ -238,7 +227,6 @@ def blackjack_game(card_folder, players):
             if event.type == pygame.QUIT:
                 running = False
           
-        
         clock.tick(30)
     
     pygame.quit()
@@ -247,8 +235,9 @@ if __name__ == "__main__":
     deck = init_deck()
     agent = BlackjackAgent()
     agent2 = RulesAgent()
+    agent3 = MLAgent()
 
-    players = [Player(agent,deck, "rl"), Player(agent2,deck, "rule")]
+    players = [Player(agent,deck, "rl"),  Player(agent3,deck, "ml"), Player(agent2,deck, "rule")]
     blackjack_game('./Card PNGs', players)
 
     
