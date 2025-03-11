@@ -18,11 +18,14 @@ class MLAgent:
         self.true_count = 0
 
     def ml_decision(self, player_total, dealer_card):
-        """Predicts whether to hit (1) or stand (0) based on trained ML model."""
+        """Predicts the best first move (Hit = 1, Stand = 0) based on winning hands."""
         self.true_count = self.get_true_count()
         input_data = pd.DataFrame([[player_total, dealer_card, self.true_count]], 
                                 columns=['player_final_value', 'dealer_up', 'true_count'])
-        return self.model.predict(input_data)[0]  # ML decides 1 (Hit) or 0 (Stand)
+        
+        prediction = self.model.predict(input_data)[0]  # Predicts first action (1 = Hit, 0 = Stand)
+        
+        return 1 if prediction == 1 else 0  # Convert to 'h' or 's' for game logic
 
     def update_count(self, card_ovr):
         """Updates the card count when a new card is dealt."""
@@ -56,7 +59,7 @@ if __name__ == "__main__":
     def parse_actions(action_str):
         """Convert string representation of a list into an actual list."""
         try:
-            action_list = ast.literal_eval(action_str)  # Convert to list
+            action_list = ast.literal_eval(action_str)  # Convert string to list
             if not isinstance(action_list, list):
                 return None
             return action_list
@@ -68,14 +71,17 @@ if __name__ == "__main__":
     # Keep only rows where every action is "H" or "S"
     df = df[df['actions_taken'].apply(lambda x: x is not None and all(a in ['H', 'S'] for a in x))]
 
-    # Use only the first action (since decisions are sequential)
-    df['actions_taken'] = df['actions_taken'].apply(lambda x: x[0] if len(x) > 0 else None)
+    # **Filter out only winning hands (win == 1 or 2)**
+    df = df[df['win'].isin([1, 2])]
 
-    # Drop any remaining NaN values in actions_taken
-    df = df.dropna(subset=['actions_taken'])
+    # **Use the first action taken in a winning hand as `y`**
+    df['first_action'] = df['actions_taken'].apply(lambda x: x[0] if len(x) > 0 else None)
+
+    # Drop any remaining NaN values in first_action
+    df = df.dropna(subset=['first_action'])
 
     # Encode "H" as 1 (Hit) and "S" as 0 (Stand)
-    df['actions_taken'] = df['actions_taken'].map({'H': 1, 'S': 0})
+    df['first_action'] = df['first_action'].map({'H': 1, 'S': 0})
 
     # Extract only the first dealer card from dealer_final
     def extract_dealer_upcard(dealer_hand_str):
@@ -91,11 +97,11 @@ if __name__ == "__main__":
     df['dealer_up'] = df['dealer_final'].apply(extract_dealer_upcard)
 
     # Ensure no missing values exist in required columns
-    df = df.dropna(subset=['player_final_value', 'dealer_up', 'true_count', 'actions_taken'])
+    df = df.dropna(subset=['player_final_value', 'dealer_up', 'true_count', 'first_action'])
 
-    # Select features for training
-    X = df[['player_final_value', 'dealer_up', 'true_count']]
-    y = df['actions_taken']
+    # **Updated Features & Target**
+    X = df[['player_final_value', 'dealer_up', 'true_count']]  # No prev_action anymore
+    y = df['first_action']  # Training on the best first action from winning hands
 
     # Ensure X and y are aligned
     X = X.dropna()
@@ -111,4 +117,4 @@ if __name__ == "__main__":
     # Save trained model
     joblib.dump(model, "blackjack_model.pkl")
 
-print("Model trained and saved successfully.")
+    print("Model trained and saved successfully.")

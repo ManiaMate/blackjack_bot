@@ -38,6 +38,7 @@ class Player:
             return self.agent.decide(player_value, dealer_value)
         elif self.type == 'ml':
             player_value = calculate_hand_value(self.hand)
+            new_hand = [self.dealer_hand[0]]
             dealer_value = calculate_hand_value(self.dealer_hand)
             return self.agent.ml_decision(player_value, dealer_value)
 
