@@ -1,3 +1,5 @@
 polars
 pygame
 joblib
+gymnasium
+scikit-learn
