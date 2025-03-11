@@ -33,7 +33,7 @@ class BlackjackAgent:
         except FileNotFoundError:
             print("No saved model found. Training from scratch...")
             train_agent(self, self.env, n_episodes)
-            plot_training(agent)
+            plot_training(self)
 
 
 
