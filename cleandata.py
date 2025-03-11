@@ -1,15 +1,19 @@
 import polars
+from os import remove
 from pathlib import Path
 
 
 def main():
     '''
     Reads in and clean the data.
+    Deletes intermediary files.
     '''
     if not Path('blackjack.parquet').exists():
         csv_to_parquet()
     
     clean_data()
+    remove('blackjack.parquet')
+    remove('blackjack_simulator.csv')
 
 
 def csv_to_parquet():
