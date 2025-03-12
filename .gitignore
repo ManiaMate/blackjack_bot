@@ -1,4 +1,1 @@
-*.csv
-*.tsv
-*.parquet
-venv
+processed_blackjack.tsv
