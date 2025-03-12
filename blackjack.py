@@ -155,7 +155,6 @@ def deal_card(hand, deck, deck_list):
         card_key = deck_list.pop()
         card = deck.pop(card_key)
         hand.append(card)
-        print(card)
         return card
 
 def shuffle(deck):
