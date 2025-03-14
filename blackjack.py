@@ -54,7 +54,7 @@ def play(deck, players):
 
     rules_agent = RulesAgent()
 
-    while any(player.money > 0 for player in players) and len(deck) >= 4:
+    while any(player.money > 0 for player in players) and len(deck) >= 10:
         print("\nStarting a new round...\n")
         
         # Each player places their bet
@@ -155,7 +155,6 @@ def deal_card(hand, deck, deck_list):
         card_key = deck_list.pop()
         card = deck.pop(card_key)
         hand.append(card)
-        print(card)
         return card
 
 def shuffle(deck):
@@ -175,7 +174,7 @@ if __name__ == "__main__":
     for fil in foldername:
         fullcard = fil.replace(".png", "").split("_of_")
         name = fullcard[0] + "_" + fullcard[1]
-        deck[name] = [(10) if fullcard[0] in ["jack", "queen", "king"] else (1, 11) if fullcard[0] == "ace" else int(fullcard[0]), fullcard]
+        deck[name] = [(10) if fullcard[0] in ["jack", "queen", "king"] else (11) if fullcard[0] == "ace" else int(fullcard[0]), fullcard]
 
     shuffled_deck = shuffle(deck)
 
