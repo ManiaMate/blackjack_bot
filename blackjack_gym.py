@@ -90,10 +90,10 @@ class BlackjackAgent:
         player_total = calculateTotal(new_custom_state[0])
         dealer_total = calculateTotal(new_custom_state[1])
         obs = (player_total,dealer_total,new_custom_state[2]) 
-        print(obs)
+        # print(obs)
 
 
-        print(f"Starting from state: {new_custom_state}")
+        # print(f"Starting from state: {new_custom_state}")
         
         action = self.get_action(obs, training=False)
         return action

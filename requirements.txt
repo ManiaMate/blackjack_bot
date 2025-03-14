@@ -3,3 +3,7 @@ pygame
 joblib
 gymnasium
 scikit-learn
+matplotlib
+tqdm
+pandas
+numpy
